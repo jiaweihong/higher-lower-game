@@ -173,7 +173,7 @@ class HigherLowerGame:
         nextCard: Card = self.deck.drawCard()
 
         if nextCard.rank == Rank.MJ:
-            # do MJ round
+            # if mj round is selected
             pass
         elif nextCard.rank == Rank.RODMAN:
             # Drawing a rodman card does not update the currentCard since it is only meant to hold playing cards 
@@ -199,17 +199,14 @@ class HigherLowerGame:
             else:
                 print("Incorrect!")
 
-                # cardsdrawned starts at 1
-                # nextcard is a normal card which we played so nor carddrawned is 2
-
                 if self.isBullsEdition and self.currentRodmanCards > 0 and self.cardsDrawned < self.deck.numberPlayingCards:
                     self.currentRodmanCards -= 1
-                    print("You activated a Rodman card! Guess the next card right to win double points!")
+                    print("You activated a Rodman card! You get a second chance and the next card right to win double points!")
                     self.isRodmanActivated = True
+                else: # this means u either have no rodman cards or u are playing normal version of the game
+                    return False
 
-            if self.cardsDrawned == self.deck.numberPlayingCards:
-                print("Congratulations you finished the Game! Thank you for playing!")
-                print(f"Your final score is: {self.score}")
+            if self.cardsDrawned == self.deck.numberPlayingCards:                
                 return False
 
             self.currentCard = nextCard
@@ -220,13 +217,12 @@ class HigherLowerGame:
     def mainLoop(self) -> None:
         print("Welcome to the Higher/Lower Card Game!")
 
-        while True:
-            if not self.playRound():
-                break
+        while self.playRound():
+            pass
+
+        print(f"Your final score is: {self.score}")
 
         print("Thanks for playing!")
-
-        
 
 if __name__ == "__main__":
     game = HigherLowerGame()
