@@ -54,8 +54,10 @@ class Rank(Enum):
 class Constraints(Enum):
     NUM_MJ_WIN_REQUIRED = 6
     NUM_MJ_CHANCES = 8
-    NUM_MJ_CARDS = 0
+    NUM_MJ_CARDS = 2
     NUM_RODMAN_CARDS = 4
+    # 5th card and 20th card which is not equivalent to index = 5 or 20 since we are using a stack
+    MJ_LOCATIONS = [5,20]
 
 class Card:
     def __init__(self, rank, suit):
@@ -109,6 +111,22 @@ class Deck:
     
     def seeTopCard(self) -> Card:
         return self.cards[self.totalCards-1] if self.cards else None
+    
+    def setMjCards(self):
+        currentMjLocations: list[int] = []
+
+        for i, card in enumerate(self.cards):
+            if card.rank == Rank.MJ:
+                currentMjLocations.append(i)
+        
+        for i, currentMjIdx in enumerate(currentMjLocations):
+            # if MJ is not in the correct position
+            correctMjLocations: list[int] = Constraints.MJ_LOCATIONS.value
+            if currentMjIdx not in correctMjLocations:
+                # swap with the card that is currently in MJ's location
+                self.cards[currentMjIdx], self.cards[self.totalCards-correctMjLocations[i]] = self.cards[self.totalCards-correctMjLocations[i]], self.cards[currentMjIdx]
+
+        self.printDeck()
 
 
 class HigherLowerGame:
@@ -137,6 +155,9 @@ class HigherLowerGame:
         # assuming we are playing the special mode, this ensure the 1st card we draw is always a normal card.
         while self.isBullsEdition and self.deck.seeTopCard().rank in (Rank.MJ, Rank.RODMAN):
             self.deck.shuffle()
+        # after ensuring top card is a normal card, grab the mj cards and place them in the appropriate place
+        if self.isBullsEdition:
+            self.deck.setMjCards()
         
         self.currentCard = self.deck.drawCard()
         self.cardsDrawned = 1
@@ -172,6 +193,11 @@ class HigherLowerGame:
 
         if nextCard.rank == Rank.MJ:
             # if mj round is selected
+            # mj round requires atleast 8 cards remaining, so mj cannot be in the last 8 cards
+
+            # what happens if rodman card is activated, then mj is picked, rodman card will still be active 
+            # what if there are rodman cards within mj rounds, they do not contribute as a win only non special cards
+                # so if during mj round, we encounter rodman, we save it but dont increment currentmjround 
             pass
         elif nextCard.rank == Rank.RODMAN:
             # Drawing a rodman card does not update the currentCard since it is only meant to hold playing cards 
