@@ -67,14 +67,12 @@ class Card:
         return f"{self.rank} of {self.suit}"
 
 class Deck:
-    # option to include MJ(jokers), default to True cause special mode should be on
     def __init__(self, isBullsEdition):
-        # seperate playing and special cards so make ending Constraints logic easier
         self.cards: list[Card] = []
         self.numberPlayingCards: int = 0
         self.totalCards: int = 0
 
-        # initialise the 52 playing cards, skipping the special cards
+        # initialise the playing cards according to the enum classes, skipping the special cards
         for rank in Rank:
             if rank in (Rank.MJ, Rank.RODMAN):
                 continue
