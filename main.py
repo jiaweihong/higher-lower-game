@@ -57,22 +57,37 @@ class Constraints(Enum):
     NUM_MJ_CARDS = 2
     NUM_RODMAN_CARDS = 4
     # (Note: 0-indexed) 
-    MJ_LOCATIONS = [1,20]
+    MJ_LOCATIONS = [4,19]
     MJ_WINNING_SEQUENCE = [1,1,1,0,0,1,1,1]
     MJ_BONUS_POINTS = 10
     RODMAN_BONUS_POINTS = 2
 
 class Card:
-    def __init__(self, rank, suit):
+    def __init__(self, rank: Rank, suit: Suit):
+        """
+        Initialises a playing card (can be normal or special card)
+
+        :param rank: rank of the card
+        :param suit: suit of the card
+        :param value: the value of the card to allow comparison
+        """
         self.rank: Rank = rank
         self.suit: Suit = suit
         self.value: int = rank.value + suit.value
     
     def getName(self) -> str:
+        """
+        Returns the card's name
+        """
         return f"{self.rank} of {self.suit}"
 
 class Deck:
-    def __init__(self, isBullsEdition):
+    def __init__(self, isBullsEdition: bool):
+        """
+        Initialises a deck of, already shuffled and ready to use, playing cards
+
+        :param isBullsEdition: if true, adds the corresponding special cards
+        """
         self.cards: list[Card] = []
         self.numberPlayingCards: int = 0
         
@@ -86,6 +101,7 @@ class Deck:
                 
                 self.numberPlayingCards += 1
                 self.cards.append(Card(rank, suit))
+
         # insert Rodman cards
         if isBullsEdition:
             for _ in range(Constraints.NUM_RODMAN_CARDS.value):
@@ -101,8 +117,10 @@ class Deck:
         if isBullsEdition:
             self.insertMjCards()
     
-    # for debuggin purposes
     def printDeck(self) -> None:
+        """
+        Prints the entire deck
+        """
         res: list[str] = []
         for card in self.cards:
             res.append(f"{card.getName()}")
@@ -113,23 +131,36 @@ class Deck:
 
     
     def shuffle(self) -> None:
+        """
+        Shuffles the cards
+        """
         random.shuffle(self.cards)
 
     def drawCard(self) -> Card:
+        """
+        Returns the top card from the deck (removing it from the deck)
+        """
         return self.cards.pop() if self.cards else None
     
     def seeTopCard(self) -> Card:
+        """
+        See the top card without removing it 
+        """
         return self.cards[-1] if self.cards else None
     
-    def insertMjCards(self):
+    def insertMjCards(self) -> None:
+        """
+        Inserts MJ cards into the predefined locations
+        """
         for i in Constraints.MJ_LOCATIONS.value:
             self.cards.insert(len(self.cards)-i, Card(Rank.MJ, Suit.BULLS))
 
-        self.printDeck()
-
 
 class HigherLowerGame:
-    def __init__(self, isBullsEdition=False):
+    def __init__(self, isBullsEdition:bool=False):
+        """
+        Initialises the high level game object
+        """
         self.currentCard: Card = None
         self.cardsDrawned: int = 0
         self.deck: Deck = None
@@ -143,27 +174,33 @@ class HigherLowerGame:
         self.cardsDrawned: int = 0
         self.score: int = 0
     
-    def configureSettings(self):
+    def configureSettings(self) -> None:
+        """
+        Initialises the appropriate deck depending on the user's game preference
+        """
         isSpecialRound: str = self.getSpecialRoundInput()
         if isSpecialRound == "Y":
             print("Bulls Edition enabled! Special MJ and Rodman cards are in play!")
             self.isBullsEdition = True
         
-        
         self.deck = Deck(self.isBullsEdition)
-        
-        self.currentCard = self.deck.drawCard()
-        self.cardsDrawned = 1
-
 
     def compareCards(self, currentCard: Card, nextCard: Card, userInput: str) -> bool:
+        """
+        Returns a boolean depending on if the user correctly guesses the next card's value
+        """
         if (nextCard.value > currentCard.value and userInput == "H") or (nextCard.value < currentCard.value and userInput == "L"):
             return True
         else:
             return False
     
-    def getHigherLowerInput(self, card: Card) -> str:
-        res: str = input(f"Your current card is {card.getName()}, is the next card Higher (H) or Lower (L)? ").strip().upper()
+    def getHigherLowerInput(self, currentCard: Card) -> str:
+        """
+        Returns the user's guess on the next card's value
+
+        :params currentCard: the user's current card
+        """
+        res: str = input(f"Your current card: {currentCard.getName()}, is the next card Higher (H) or Lower (L)? ").strip().upper()
 
         while res not in ("H", "L"):
             res = input("Please input the characters: H or L. ").strip().upper()
@@ -171,6 +208,9 @@ class HigherLowerGame:
         return res
 
     def getSpecialRoundInput(self) -> str:
+        """
+        Returns the user's guess on the next card's value
+        """
         res: str = input("Do you want to enable the special Chicago Bulls Edition of the Game? Yes (Y) or No (N) ").strip().upper()
 
         while res not in ("Y", "N"):
@@ -179,7 +219,10 @@ class HigherLowerGame:
         return res
         
     def playRound(self) -> bool:
-        print(f"Next card is: {self.deck.seeTopCard().getName()}")
+        """
+        Contains the main game logic to handle the players move
+        """
+        #print(f"Next card is: {self.deck.seeTopCard().getName()}")
         
         if self.isMjActivated:
             print(f"You are currently on MJ round number {self.currentMjRound+1} / f{len(Constraints.MJ_WINNING_SEQUENCE.value)}")
@@ -261,7 +304,14 @@ class HigherLowerGame:
             return True
 
     def mainLoop(self) -> None:
+        """
+        Loops indefinitely until the game is done
+        """
         print("Welcome to the Higher/Lower Card Game! \n")
+
+        # Draws the initial card for the user
+        self.currentCard = self.deck.drawCard()
+        self.cardsDrawned = 1
 
         while self.playRound():
             pass
