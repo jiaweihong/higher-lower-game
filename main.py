@@ -56,8 +56,8 @@ class Constraints(Enum):
     NUM_MJ_CHANCES = 8
     NUM_MJ_CARDS = 2
     NUM_RODMAN_CARDS = 4
-    # (Note: 1-indexed) 
-    MJ_LOCATIONS = [2,20]
+    # (Note: 0-indexed) 
+    MJ_LOCATIONS = [1,20]
     MJ_WINNING_SEQUENCE = [1,1,1,0,0,1,1,1]
     MJ_BONUS_POINTS = 10
     RODMAN_BONUS_POINTS = 2
@@ -75,8 +75,7 @@ class Deck:
     def __init__(self, isBullsEdition):
         self.cards: list[Card] = []
         self.numberPlayingCards: int = 0
-        self.startingTotalCards: int = 0
-
+        
         # initialise the playing cards according to the enum classes, skipping the special cards
         for rank in Rank:
             if rank in (Rank.MJ, Rank.RODMAN):
@@ -87,17 +86,20 @@ class Deck:
                 
                 self.numberPlayingCards += 1
                 self.cards.append(Card(rank, suit))
-
-        self.startingTotalCards = self.numberPlayingCards
-        # insert special cards
+        # insert Rodman cards
         if isBullsEdition:
-            for _ in range(Constraints.NUM_MJ_CARDS.value):
-                self.startingTotalCards += 1
-                self.cards.append(Card(Rank.MJ, Suit.BULLS))
-
             for _ in range(Constraints.NUM_RODMAN_CARDS.value):
-                self.startingTotalCards += 1
                 self.cards.append(Card(Rank.RODMAN, Suit.BULLS))
+        
+        self.shuffle()
+
+        # assuming we are playing the special mode, this ensure the 1st card we draw is always a normal card.
+        while isBullsEdition and self.seeTopCard().rank in (Rank.MJ, Rank.RODMAN):
+            self.shuffle()
+
+        # after ensuring top card is a normal card, insert MJ cards into appropriate places
+        if isBullsEdition:
+            self.insertMjCards()
     
     # for debuggin purposes
     def printDeck(self) -> None:
@@ -119,25 +121,9 @@ class Deck:
     def seeTopCard(self) -> Card:
         return self.cards[-1] if self.cards else None
     
-    def setMjCards(self):
-        currentMjLocations: list[int] = []
-        newMjLocations: list[int] = []
-        for i, card in enumerate(self.cards):
-            if card.rank == Rank.MJ:
-                currentMjLocations.append(i)
-        print(f"currentMjLocations = {currentMjLocations}")
-        
-        for i, currentMjIdx in enumerate(currentMjLocations):
-            # if MJ is not in the correct position
-            correctMjLocations: list[int] = Constraints.MJ_LOCATIONS.value
-            if currentMjIdx not in correctMjLocations:
-                # swap with the card that is currently in MJ's location
-                self.cards[currentMjIdx], self.cards[self.startingTotalCards-correctMjLocations[i]] = self.cards[self.startingTotalCards-correctMjLocations[i]], self.cards[currentMjIdx]
-        
-        for i, card in enumerate(self.cards):
-            if card.rank == Rank.MJ:
-                newMjLocations.append(i)
-        print(f"newMjLocations = {newMjLocations}")
+    def insertMjCards(self):
+        for i in Constraints.MJ_LOCATIONS.value:
+            self.cards.insert(len(self.cards)-i, Card(Rank.MJ, Suit.BULLS))
 
         self.printDeck()
 
@@ -165,14 +151,6 @@ class HigherLowerGame:
         
         
         self.deck = Deck(self.isBullsEdition)
-        self.deck.shuffle()
-
-        # assuming we are playing the special mode, this ensure the 1st card we draw is always a normal card.
-        while self.isBullsEdition and self.deck.seeTopCard().rank in (Rank.MJ, Rank.RODMAN):
-            self.deck.shuffle()
-        # after ensuring top card is a normal card, grab the mj cards and place them in the appropriate place
-        if self.isBullsEdition:
-            self.deck.setMjCards()
         
         self.currentCard = self.deck.drawCard()
         self.cardsDrawned = 1
