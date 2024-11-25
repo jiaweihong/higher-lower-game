@@ -26,7 +26,7 @@ class Rank(Enum):
     QUEEN = 12
     KING = 13
     ACE = 14
-    # Jersey Numbers, though value is not relevant
+    # Jersey numbers, though value is irrelevant
     MJ = 23
     RODMAN = 91
 
@@ -56,8 +56,11 @@ class Constraints(Enum):
     NUM_MJ_CHANCES = 8
     NUM_MJ_CARDS = 2
     NUM_RODMAN_CARDS = 4
-    # 5th card and 20th card which is not equivalent to index = 5 or 20 since we are using a stack
-    MJ_LOCATIONS = [5,20]
+    # (Note: 1-indexed) 
+    MJ_LOCATIONS = [2,20]
+    MJ_WINNING_SEQUENCE = [1,1,1,0,0,1,1,1]
+    MJ_BONUS_POINTS = 10
+    RODMAN_BONUS_POINTS = 2
 
 class Card:
     def __init__(self, rank, suit):
@@ -72,7 +75,7 @@ class Deck:
     def __init__(self, isBullsEdition):
         self.cards: list[Card] = []
         self.numberPlayingCards: int = 0
-        self.totalCards: int = 0
+        self.startingTotalCards: int = 0
 
         # initialise the playing cards according to the enum classes, skipping the special cards
         for rank in Rank:
@@ -85,15 +88,15 @@ class Deck:
                 self.numberPlayingCards += 1
                 self.cards.append(Card(rank, suit))
 
-        self.totalCards = self.numberPlayingCards
+        self.startingTotalCards = self.numberPlayingCards
         # insert special cards
         if isBullsEdition:
             for _ in range(Constraints.NUM_MJ_CARDS.value):
-                self.totalCards += 1
+                self.startingTotalCards += 1
                 self.cards.append(Card(Rank.MJ, Suit.BULLS))
 
             for _ in range(Constraints.NUM_RODMAN_CARDS.value):
-                self.totalCards += 1
+                self.startingTotalCards += 1
                 self.cards.append(Card(Rank.RODMAN, Suit.BULLS))
     
     # for debuggin purposes
@@ -101,7 +104,11 @@ class Deck:
         res: list[str] = []
         for card in self.cards:
             res.append(f"{card.getName()}")
+
+        print()
         print(res)
+        print()
+
     
     def shuffle(self) -> None:
         random.shuffle(self.cards)
@@ -110,21 +117,27 @@ class Deck:
         return self.cards.pop() if self.cards else None
     
     def seeTopCard(self) -> Card:
-        return self.cards[self.totalCards-1] if self.cards else None
+        return self.cards[-1] if self.cards else None
     
     def setMjCards(self):
         currentMjLocations: list[int] = []
-
+        newMjLocations: list[int] = []
         for i, card in enumerate(self.cards):
             if card.rank == Rank.MJ:
                 currentMjLocations.append(i)
+        print(f"currentMjLocations = {currentMjLocations}")
         
         for i, currentMjIdx in enumerate(currentMjLocations):
             # if MJ is not in the correct position
             correctMjLocations: list[int] = Constraints.MJ_LOCATIONS.value
             if currentMjIdx not in correctMjLocations:
                 # swap with the card that is currently in MJ's location
-                self.cards[currentMjIdx], self.cards[self.totalCards-correctMjLocations[i]] = self.cards[self.totalCards-correctMjLocations[i]], self.cards[currentMjIdx]
+                self.cards[currentMjIdx], self.cards[self.startingTotalCards-correctMjLocations[i]] = self.cards[self.startingTotalCards-correctMjLocations[i]], self.cards[currentMjIdx]
+        
+        for i, card in enumerate(self.cards):
+            if card.rank == Rank.MJ:
+                newMjLocations.append(i)
+        print(f"newMjLocations = {newMjLocations}")
 
         self.printDeck()
 
@@ -137,6 +150,8 @@ class HigherLowerGame:
         self.isBullsEdition: bool = isBullsEdition
         self.currentRodmanCards: int = 0
         self.currentMjRound: int = 0
+        self.currentMjSequence: list[int] = []
+        self.isMjActivated = False
         self.isRodmanActivated: bool = False
         self.isBullsEdition: bool = False
         self.cardsDrawned: int = 0
@@ -184,21 +199,22 @@ class HigherLowerGame:
             res = input("Please input the characters: Y or N. ").strip().upper()
 
         return res
-    
+        
     def playRound(self) -> bool:
-        self.deck.printDeck()
+        print(f"Next card is: {self.deck.seeTopCard().getName()}")
+        
+        if self.isMjActivated:
+            print(f"You are currently on MJ round number {self.currentMjRound+1} / f{len(Constraints.MJ_WINNING_SEQUENCE.value)}")
+
         userInput: str = self.getHigherLowerInput(self.currentCard)
         
         nextCard: Card = self.deck.drawCard()
 
         if nextCard.rank == Rank.MJ:
-            # if mj round is selected
-            # mj round requires atleast 8 cards remaining, so mj cannot be in the last 8 cards
-
-            # what happens if rodman card is activated, then mj is picked, rodman card will still be active 
-            # what if there are rodman cards within mj rounds, they do not contribute as a win only non special cards
-                # so if during mj round, we encounter rodman, we save it but dont increment currentmjround 
-            pass
+            print(f"Congratulations you got the Micheal Jordan card, activating special MJ round...")
+            self.isMjActivated = True
+            
+            return True
         elif nextCard.rank == Rank.RODMAN:
             # Drawing a rodman card does not update the currentCard since it is only meant to hold playing cards 
             self.currentRodmanCards += 1
@@ -209,37 +225,65 @@ class HigherLowerGame:
             print(f"The card was a {nextCard.getName()}")
             isCorrect: bool = self.compareCards(self.currentCard, nextCard, userInput)
             
-            # need to increment before if statements so, if we are on the last card, the game needs to know that this is the last round
+            # need to increment before if statements so, because if we are on the last card, the game needs to know that this is the last round
             self.cardsDrawned += 1
 
-            if isCorrect and self.isRodmanActivated:
-                print("Correct you got 2 points, thanks to Rodman!")
+            if self.isMjActivated:
+                if isCorrect:
+                    print("Correct you got 1 point!")
+                    self.score += 1
+                    self.currentMjSequence.append(1)
+                else:
+                    self.currentMjSequence.append(0)
+                
+                # Check as soon as we finish playing the final MJ round
+                self.currentMjRound += 1
 
-                self.score += 2
+                if self.currentMjRound == len(Constraints.MJ_WINNING_SEQUENCE.value):
+                    if self.currentMjSequence == Constraints.MJ_WINNING_SEQUENCE.value:
+                        print("Congratulations you won the MJ round! You get 10 extra bonus points!!")
+                        self.score += Constraints.MJ_BONUS_POINTS.value
+                        self.isMjActivated = False
+                    else:
+                        print("Unfortunately you did not win any bonus points!")
+                        print(f"Your sequence was {self.currentMjSequence}, the required sequence is {Constraints.MJ_WINNING_SEQUENCE.value}")
+
+                    print("Exiting Special MJ Round...")
+
+                    # Reset MJ related attributes
+                    self.isMjActivated = False
+                    self.currentMjRound = 0
+                    self.currentMjSequence = []
+            elif isCorrect and self.isRodmanActivated:
+                print(f"Rebounded by Rodman and you made the shot! You got {Constraints.RODMAN_BONUS_POINTS.value} points")
+
+                self.score += Constraints.RODMAN_BONUS_POINTS.value
                 self.isRodmanActivated = False
             elif isCorrect:
-                print("Correct you got 1 points!")
+                print("Correct you got 1 point!")
                 self.score += 1
             else:
                 print("Incorrect!")
 
                 if self.isBullsEdition and self.currentRodmanCards > 0 and self.cardsDrawned < self.deck.numberPlayingCards:
                     self.currentRodmanCards -= 1
-                    print("You activated a Rodman card! You get a second chance and the next card right to win double points!")
+                    print("You activated a Rodman card! You get a second chance. Get the next card right to win double points!")
                     self.isRodmanActivated = True
                 else: # this means u either have no rodman cards or u are playing normal version of the game
+                    print()
                     return False
 
-            if self.cardsDrawned == self.deck.numberPlayingCards:                
+            if self.cardsDrawned == self.deck.numberPlayingCards:
+                print()
                 return False
 
             self.currentCard = nextCard
-            print(f"Your current score is: {self.score}")
+            print(f"Your current score is: {self.score} \n")
 
             return True
 
     def mainLoop(self) -> None:
-        print("Welcome to the Higher/Lower Card Game!")
+        print("Welcome to the Higher/Lower Card Game! \n")
 
         while self.playRound():
             pass
