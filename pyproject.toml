@@ -6,8 +6,9 @@ authors = ["Jia Wei Hong <jiaweihong1@hotmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7.0"
+python = ">=3.9,<4.0.0"
 customtkinter = "^5.2.2"
+pillow = "^11.0.0"
 
 
 [build-system]
