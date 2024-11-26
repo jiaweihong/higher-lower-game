@@ -166,32 +166,28 @@ class Deck:
 
 
 class HigherLowerGame:
-    def __init__(self, isBullsEdition:bool=False):
+    def __init__(self):
         """
-        Initialises the high level game object
+        Initialises the high level game object (However, it does not initilise deck since we need to get user input 1st)
         """
         self.currentCard: Card = None
         self.cardsDrawned: int = 0
         self.deck: Deck = None
-        self.isBullsEdition: bool = isBullsEdition
+
+        self.isBullsEdition: bool = None
         self.currentRodmanCards: int = 0
         self.currentMjRound: int = 0
         self.currentMjSequence: list[int] = []
         self.isMjActivated = False
         self.isRodmanActivated: bool = False
-        self.isBullsEdition: bool = False
         self.cardsDrawned: int = 0
         self.score: int = 0
     
-    def configureSettings(self) -> None:
+    def configureSpecialEdition(self, isBullsEdition: bool) -> None:
         """
-        Initialises the appropriate deck depending on the user's game preference
+        Update the variables relevant to special edition and also initialises the deck of cards accordingly
         """
-        isSpecialRound: str = self.getSpecialRoundInput()
-        if isSpecialRound == "Y":
-            print("Bulls Edition enabled! Special MJ and Rodman cards are in play!")
-            self.isBullsEdition = True
-        
+        self.isBullsEdition = isBullsEdition
         self.deck = Deck(self.isBullsEdition)
 
     def compareCards(self, currentCard: Card, nextCard: Card, userInput: str) -> bool:
@@ -216,16 +212,16 @@ class HigherLowerGame:
 
         return res
 
-    def getSpecialRoundInput(self) -> str:
-        """
-        Returns the user's guess on the next card's value
-        """
-        res: str = input("Do you want to enable the special Chicago Bulls Edition of the Game? Yes (Y) or No (N) ").strip().upper()
+    # def getSpecialRoundInput(self) -> str:
+    #     """
+    #     Returns the user's guess on the next card's value
+    #     """
+    #     res: str = input("Do you want to enable the special Chicago Bulls Edition of the Game? Yes (Y) or No (N) ").strip().upper()
 
-        while res not in ("Y", "N"):
-            res = input("Please input the characters: Y or N. ").strip().upper()
+    #     while res not in ("Y", "N"):
+    #         res = input("Please input the characters: Y or N. ").strip().upper()
 
-        return res
+    #     return res
         
     def playRound(self) -> bool:
         """
@@ -328,11 +324,6 @@ class HigherLowerGame:
         print(f"Your final score is: {self.score}")
 
         print("Thanks for playing!")
-
-if __name__ == "__main__":
-    game = HigherLowerGame()
-    game.configureSettings()
-    game.mainLoop()
 
     
     
