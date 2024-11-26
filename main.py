@@ -119,7 +119,7 @@ class Deck:
     
     def printDeck(self) -> None:
         """
-        Prints the entire deck
+        (For Debugging) Prints the entire deck
         """
         res: list[str] = []
         for card in self.cards:
@@ -222,10 +222,10 @@ class HigherLowerGame:
         """
         Contains the main game logic to handle the players move
         """
-        #print(f"Next card is: {self.deck.seeTopCard().getName()}")
+        print(f"Next card is: {self.deck.seeTopCard().getName()}")
         
         if self.isMjActivated:
-            print(f"You are currently on MJ round number {self.currentMjRound+1} / f{len(Constraints.MJ_WINNING_SEQUENCE.value)}")
+            print(f"You are currently on MJ round number {self.currentMjRound+1} / {len(Constraints.MJ_WINNING_SEQUENCE.value)}")
 
         userInput: str = self.getHigherLowerInput(self.currentCard)
         
@@ -255,6 +255,7 @@ class HigherLowerGame:
                     self.score += 1
                     self.currentMjSequence.append(1)
                 else:
+                    print("Incorrect!")
                     self.currentMjSequence.append(0)
                 
                 # Check as soon as we finish playing the final MJ round
@@ -295,7 +296,6 @@ class HigherLowerGame:
                     return False
 
             if self.cardsDrawned == self.deck.numberPlayingCards:
-                print()
                 return False
 
             self.currentCard = nextCard
