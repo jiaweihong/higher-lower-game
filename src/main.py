@@ -19,8 +19,6 @@ class Suit(Enum):
         }
 
         return nameToSymbol[self.name]
-        
-
 class Rank(Enum):
     TWO = 2
     THREE = 3
@@ -85,7 +83,6 @@ class Card:
         self.suit: Suit = suit
         self.value: int = rank.value + suit.value
         self.count: int = count
-
     
     def getName(self) -> str:
         """
@@ -113,13 +110,11 @@ class Deck:
                 
                 self.numberPlayingCards += 1
                 self.cards.append(Card(rank, suit))
-                print(Card(rank, suit).getName())
 
         # insert Rodman cards
         if isBullsEdition:
             for i in range(Constraints.NUM_RODMAN_CARDS.value):
                 self.cards.append(Card(Rank.RODMAN, Suit.BULLS, i + 1))
-                print(Card(Rank.RODMAN, Suit.BULLS, i + 1).getName())
         
         self.shuffle()
 
@@ -168,7 +163,6 @@ class Deck:
         """
         for i, pos in enumerate(Constraints.MJ_LOCATIONS.value):
             self.cards.insert(len(self.cards)-pos, Card(Rank.MJ, Suit.BULLS, i + 1))
-            print(Card(Rank.MJ, Suit.BULLS, i + 1).getName())
 
 
 class HigherLowerGame:
