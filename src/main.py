@@ -10,7 +10,16 @@ class Suit(Enum):
     
     # Override the function to return just the name
     def __str__(self):
-        return self.name
+        nameToSymbol = {
+            "CLUBS" : "clubs",
+            "DIAMONDS" : "diamonds",
+            "HEARTS" : "hearts",
+            "SPADES" : "spades",
+            "BULLS" : "bulls",
+        }
+
+        return nameToSymbol[self.name]
+        
 
 class Rank(Enum):
     TWO = 2
@@ -41,12 +50,12 @@ class Rank(Enum):
             "EIGHT" : "8",
             "NINE" : "9",
             "TEN" : "10",
-            "JACK" : "J",
-            "QUEEN" : "Q",
-            "KING" : "K",
-            "ACE" : "A",
-            "MJ": "MJ",
-            "RODMAN": "ROD"
+            "JACK" : "jack",
+            "QUEEN" : "queen",
+            "KING" : "king",
+            "ACE" : "ace",
+            "MJ": "mj",
+            "RODMAN": "rodman"
         }
 
         return nameToSymbol[self.name]
@@ -63,23 +72,26 @@ class Constraints(Enum):
     RODMAN_BONUS_POINTS = 2
 
 class Card:
-    def __init__(self, rank: Rank, suit: Suit):
+    def __init__(self, rank: Rank, suit: Suit, count: int = None):
         """
         Initialises a playing card (can be normal or special card)
 
         :param rank: rank of the card
         :param suit: suit of the card
         :param value: the value of the card to allow comparison
+        :param count: the ith special card (MJ/RODMAN), Ideally Card should be a base class then have PlayingCard and SpecialCard extend it.
         """
         self.rank: Rank = rank
         self.suit: Suit = suit
         self.value: int = rank.value + suit.value
+        self.count: int = count
+
     
     def getName(self) -> str:
         """
         Returns the card's name
         """
-        return f"{self.rank} of {self.suit}"
+        return f"{self.rank}_of_{self.suit}" if self.suit != Suit.BULLS else f"{self.rank}_of_{self.suit}_{self.count}"
 
 class Deck:
     def __init__(self, isBullsEdition: bool):
@@ -101,11 +113,13 @@ class Deck:
                 
                 self.numberPlayingCards += 1
                 self.cards.append(Card(rank, suit))
+                print(Card(rank, suit).getName())
 
         # insert Rodman cards
         if isBullsEdition:
-            for _ in range(Constraints.NUM_RODMAN_CARDS.value):
-                self.cards.append(Card(Rank.RODMAN, Suit.BULLS))
+            for i in range(Constraints.NUM_RODMAN_CARDS.value):
+                self.cards.append(Card(Rank.RODMAN, Suit.BULLS, i + 1))
+                print(Card(Rank.RODMAN, Suit.BULLS, i + 1).getName())
         
         self.shuffle()
 
@@ -152,8 +166,9 @@ class Deck:
         """
         Inserts MJ cards into the predefined locations
         """
-        for i in Constraints.MJ_LOCATIONS.value:
-            self.cards.insert(len(self.cards)-i, Card(Rank.MJ, Suit.BULLS))
+        for i, pos in enumerate(Constraints.MJ_LOCATIONS.value):
+            self.cards.insert(len(self.cards)-pos, Card(Rank.MJ, Suit.BULLS, i + 1))
+            print(Card(Rank.MJ, Suit.BULLS, i + 1).getName())
 
 
 class HigherLowerGame:
