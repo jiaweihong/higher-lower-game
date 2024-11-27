@@ -98,7 +98,7 @@ class Deck:
         :param isBullsEdition: if true, adds the corresponding special cards
         """
         self.cards: list[Card] = []
-        self.numberPlayingCards: int = 0
+        self.startingNumPlayingCards: int = 0
         
         # initialise the playing cards according to the enum classes, skipping the special cards
         for rank in Rank:
@@ -108,7 +108,7 @@ class Deck:
                 if suit == Suit.BULLS:
                     continue
                 
-                self.numberPlayingCards += 1
+                self.startingNumPlayingCards += 1
                 self.cards.append(Card(rank, suit))
 
         # insert Rodman cards
@@ -170,9 +170,10 @@ class HigherLowerGame:
         """
         Initialises the high level game object (However, it does not initilise deck since we need to get user input 1st)
         """
-        self.currentCard: Card = None
-        self.cardsDrawned: int = 0
         self.deck: Deck = None
+        self.currentCard: Card = None
+        
+        self.normalCardsDrawned: int = 0
 
         self.isBullsEdition: bool = None
         self.currentRodmanCards: int = 0
@@ -180,7 +181,6 @@ class HigherLowerGame:
         self.currentMjSequence: list[int] = []
         self.isMjActivated = False
         self.isRodmanActivated: bool = False
-        self.cardsDrawned: int = 0
         self.score: int = 0
     
     def configureSpecialEdition(self, isBullsEdition: bool) -> None:
@@ -190,50 +190,30 @@ class HigherLowerGame:
         self.isBullsEdition = isBullsEdition
         self.deck = Deck(self.isBullsEdition)
 
-    def compareCards(self, currentCard: Card, nextCard: Card, userInput: str) -> bool:
+    def compareCards(self, currentCard: Card, nextCard: Card, isUserInputHigher: bool) -> bool:
         """
         Returns a boolean depending on if the user correctly guesses the next card's value
         """
-        if (nextCard.value > currentCard.value and userInput == "H") or (nextCard.value < currentCard.value and userInput == "L"):
+        if (nextCard.value > currentCard.value and isUserInputHigher) or (nextCard.value < currentCard.value and not isUserInputHigher):
             return True
         else:
             return False
     
-    def getHigherLowerInput(self, currentCard: Card) -> str:
-        """
-        Returns the user's guess on the next card's value
+    def isNextCardRodman(self, card: Card) -> bool:
+        return True if card.suit == (Rank.RODMAN) else False
+    
+    def isNextCardMj(self, card: Card) -> bool:
+        return True if card.suit == (Rank.MJ) else False
 
-        :params currentCard: the user's current card
-        """
-        res: str = input(f"Your current card: {currentCard.getName()}, is the next card Higher (H) or Lower (L)? ").strip().upper()
+    def resetMjRound(self):
+        self.isMjActivated = False
+        self.currentMjRound = 0
+        self.currentMjSequence = []
 
-        while res not in ("H", "L"):
-            res = input("Please input the characters: H or L. ").strip().upper()
-
-        return res
-
-    # def getSpecialRoundInput(self) -> str:
-    #     """
-    #     Returns the user's guess on the next card's value
-    #     """
-    #     res: str = input("Do you want to enable the special Chicago Bulls Edition of the Game? Yes (Y) or No (N) ").strip().upper()
-
-    #     while res not in ("Y", "N"):
-    #         res = input("Please input the characters: Y or N. ").strip().upper()
-
-    #     return res
-        
-    def playRound(self) -> bool:
+    def playRound(self, isUserInputHigher: bool) -> bool:
         """
         Contains the main game logic to handle the players move
-        """
-        print(f"Next card is: {self.deck.seeTopCard().getName()}")
-        
-        if self.isMjActivated:
-            print(f"You are currently on MJ round number {self.currentMjRound+1} / {len(Constant.MJ_WINNING_SEQUENCE.value)}")
-
-        userInput: str = self.getHigherLowerInput(self.currentCard)
-        
+        """ 
         nextCard: Card = self.deck.drawCard()
 
         if nextCard.rank == Rank.MJ:
@@ -249,38 +229,26 @@ class HigherLowerGame:
             return True
         else: # next card is NOT a special card
             print(f"The card was a {nextCard.getName()}")
-            isCorrect: bool = self.compareCards(self.currentCard, nextCard, userInput)
+            isCorrect: bool = self.compareCards(self.currentCard, nextCard, isUserInputHigher)
             
             # need to increment before if statements so, because if we are on the last card, the game needs to know that this is the last round
-            self.cardsDrawned += 1
+            self.normalCardsDrawned += 1
 
             if self.isMjActivated:
-                if isCorrect:
+                # basically when the current winning number is 1, we need to guess correctly, when it is 0, we need to guess 'wrongly'
+                if (isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 1) or (not isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 0):
                     print("Correct you got 1 point!")
                     self.score += 1
-                    self.currentMjSequence.append(1)
-                else:
-                    print("Incorrect!")
-                    self.currentMjSequence.append(0)
-                
-                # Check as soon as we finish playing the final MJ round
-                self.currentMjRound += 1
+                    self.currentMjSequence.append(Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound])
 
-                if self.currentMjRound == len(Constant.MJ_WINNING_SEQUENCE.value):
                     if self.currentMjSequence == Constant.MJ_WINNING_SEQUENCE.value:
                         print("Congratulations you won the MJ round! You get 10 extra bonus points!!")
                         self.score += Constant.MJ_BONUS_POINTS.value
-                        self.isMjActivated = False
-                    else:
-                        print("Unfortunately you did not win any bonus points!")
-                        print(f"Your sequence was {self.currentMjSequence}, the required sequence is {Constant.MJ_WINNING_SEQUENCE.value}")
-
-                    print("Exiting Special MJ Round...")
-
-                    # Reset MJ related attributes
-                    self.isMjActivated = False
-                    self.currentMjRound = 0
-                    self.currentMjSequence = []
+                        self.resetMjRound()
+                else:
+                    print("Incorrect! Now Exiting MJ Special Round...")
+                    self.resetMjRound()
+                self.currentMjRound += 1
             elif isCorrect and self.isRodmanActivated:
                 print(f"Rebounded by Rodman and you made the shot! You got {Constant.RODMAN_BONUS_POINTS.value} points")
 
@@ -292,7 +260,7 @@ class HigherLowerGame:
             else:
                 print("Incorrect!")
 
-                if self.isBullsEdition and self.currentRodmanCards > 0 and self.cardsDrawned < self.deck.numberPlayingCards:
+                if self.isBullsEdition and self.currentRodmanCards > 0 and self.normalCardsDrawned < self.deck.startingNumPlayingCards:
                     self.currentRodmanCards -= 1
                     print("You activated a Rodman card! You get a second chance. Get the next card right to win double points!")
                     self.isRodmanActivated = True
@@ -300,30 +268,21 @@ class HigherLowerGame:
                     print()
                     return False
 
-            if self.cardsDrawned == self.deck.numberPlayingCards:
+            if self.normalCardsDrawned == self.deck.startingNumPlayingCards:
                 return False
 
             self.currentCard = nextCard
             print(f"Your current score is: {self.score} \n")
 
             return True
-
-    def mainLoop(self) -> None:
+           
+    def startGame(self) -> None:
         """
-        Loops indefinitely until the game is done
+        Starts the game
         """
-        print("Welcome to the Higher/Lower Card Game! \n")
-
         # Draws the initial card for the user
         self.currentCard = self.deck.drawCard()
-        self.cardsDrawned = 1
-
-        while self.playRound():
-            pass
-
-        print(f"Your final score is: {self.score}")
-
-        print("Thanks for playing!")
+        self.normalCardsDrawned += 1
 
     
     
