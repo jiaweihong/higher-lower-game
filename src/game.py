@@ -169,6 +169,8 @@ class HigherLowerGame:
     def __init__(self):
         """
         Initialises the high level game object (However, it does not initilise deck since we need to get user input 1st)
+
+        :parms currentCard: Holds the current normal card (non-special)
         """
         self.deck: Deck = None
         self.currentCard: Card = None
@@ -200,10 +202,10 @@ class HigherLowerGame:
             return False
     
     def isNextCardRodman(self, card: Card) -> bool:
-        return True if card.suit == (Rank.RODMAN) else False
+        return True if card.rank == (Rank.RODMAN) else False
     
     def isNextCardMj(self, card: Card) -> bool:
-        return True if card.suit == (Rank.MJ) else False
+        return True if card.rank == (Rank.MJ) else False
 
     def resetMjRound(self):
         self.isMjActivated = False
@@ -222,7 +224,6 @@ class HigherLowerGame:
             
             return True
         elif nextCard.rank == Rank.RODMAN:
-            # Drawing a rodman card does not update the currentCard since it is only meant to hold playing cards 
             self.currentRodmanCards += 1
             print(f"Congratulations you got a Rodman Card, you currently have {self.currentRodmanCards} Rodman Cards")
 

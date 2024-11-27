@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from game import HigherLowerGame, Deck, Card
+from game import HigherLowerGame, Card, Rank
 from PIL import Image, ImageTk
 from enum import Enum
 
@@ -83,42 +83,66 @@ class GameFrame(ctk.CTkFrame):
         self.scoreLabel.pack()
 
     def showSpecialCardPopup(self, card: Card):
-        print()
-        print("POPUP HERE")
-        print()
         popup = ctk.CTkToplevel(self)
         popup.title("Special Card Received")
-        popup.geometry("300x150")
+        popup.geometry("500x450")
 
-        # Add a label to display the message
-        specialCard = ctk.CTkLabel(
-            popup, 
-            text="You have received a special card!", 
-            font=("Arial", 16),
+        desc = ""
+        if card.rank == Rank.MJ:
+            desc = f"You have received the special {card.getName()} card.\n\n Guess the next 8 cards in the following sequence (R, R, R, W, W, R, R, R) corresponding to the Bulls Winning Sequence from 1991-98, where R means you correctly guessed it and W means you 'wrongly' guessed it, to win 10 bonus points"
+        elif card.rank == Rank.RODMAN:
+            desc = f"You have received the special {card.getName()} card.\n\n On the next card you get wrong, it will be rebounded by Rodman, giving you a 2nd chance to win double points!"
+
+        descLabel = ctk.CTkLabel(
+            popup,
+            text=desc,
+            wraplength=400,
+            font=("Arial", 14),
+        )
+        descLabel.pack(pady=10) 
+
+        cardLabel = ctk.CTkLabel(
+            popup,
             image=self.getImage(card)
         )
-        specialCard.pack(expand=True)
+        cardLabel.pack(pady=20) 
 
         # Button to close the popup
-        close_button = ctk.CTkButton(
+        closeBtn = ctk.CTkButton(
             popup, 
             text="Close", 
             command=popup.destroy
         )
-        close_button.pack(pady=10)
+        closeBtn.pack(pady=10)
+
+        popup.grab_set()
+        self.master.wait_window(popup)
     
     def onHigherBtnClick(self):
+        nextCard: Card = self.game.deck.seeTopCard()
+
+        if self.game.isNextCardMj(nextCard):
+            self.showSpecialCardPopup(nextCard)
+        elif self.game.isNextCardRodman(nextCard):
+            self.showSpecialCardPopup(nextCard)
+
         self.game.playRound(isUserInputHigher=True)
         self.updateUi()
             
     def onLowerBtnClick(self):
+        nextCard: Card = self.game.deck.seeTopCard()
+        if self.game.isNextCardMj(nextCard):
+            self.showSpecialCardPopup(nextCard)
+        elif self.game.isNextCardRodman(nextCard):
+            self.showSpecialCardPopup(nextCard)
+
         self.game.playRound(isUserInputHigher=False)
         self.updateUi()
 
     def updateUi(self):
         self.currentCardLabel.configure(image=self.getImage(self.game.currentCard))
         self.scoreLabel.configure(text=f"Score: {self.game.score}")
-        self.deckLabel.configure(image=self.getImage(self.master.game.deck.seeTopCard()) if self.master.menuFrame.isIsdpOn else self.getBackOfCard())
+        self.deckLabel.configure(image=self.getImage(self.master.game.deck.seeTopCard()) if self.master.menuFrame.isIsdpOn.get() else self.getBackOfCard())
     
     def getImage(self, card: Card) -> ImageTk.PhotoImage:
         """
