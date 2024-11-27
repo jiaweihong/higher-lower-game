@@ -64,7 +64,7 @@ class Constant(Enum):
     NUM_MJ_CARDS = 2
     NUM_RODMAN_CARDS = 4
     # (Note: 0-indexed) 
-    MJ_LOCATIONS = [4,19]
+    MJ_LOCATIONS = (4,19)
     MJ_WINNING_SEQUENCE = [1,1,1,0,0,1,1,1]
     MJ_BONUS_POINTS = 10
     RODMAN_BONUS_POINTS = 2

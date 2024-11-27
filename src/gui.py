@@ -1,13 +1,22 @@
 import customtkinter as ctk
 from game import HigherLowerGame, Deck, Card
 from PIL import Image, ImageTk
+from enum import Enum
 
-class HigherLowerGUI(ctk.CTk):
+
+class Constant(Enum):
+    CARD_SIZE = (150,218)
+
+class HigherLowerApp(ctk.CTk):
     def __init__(self, game: HigherLowerGame):
         super().__init__()
         self.game: HigherLowerGame = game
 
         ctk.set_appearance_mode("dark")
+
+        # Configure rows and columns for centering frames
+        self.grid_rowconfigure(0, weight=1)  # Center vertically
+        self.grid_columnconfigure(0, weight=1)
 
         self.title("App")
         self.geometry("900x500")
@@ -15,14 +24,25 @@ class HigherLowerGUI(ctk.CTk):
         self.menuFrame = MenuFrame(self)
         self.gameFrame = GameFrame(self)
         self.currentFrame = self.menuFrame
-
+        
         # Show menu frame initially
         self.showFrame(self.menuFrame)
     
     def showFrame(self, frameToShow: ctk.CTkFrame):
-        self.currentFrame.pack_forget() 
-        frameToShow.pack(expand=True, fill="both")  
+        print(f"current frame {self.currentFrame.winfo_manager()}")
+        if self.currentFrame == self.menuFrame:
+            self.currentFrame.pack_forget() 
+        elif self.currentFrame == self.gameFrame: 
+            self.currentFrame.grid_forget() 
 
+        print(f"to show frame {frameToShow.winfo_manager()}")
+
+        if frameToShow == self.menuFrame:
+            frameToShow.pack(expand=True, fill="both")  
+        elif frameToShow == self.gameFrame: 
+            frameToShow.grid()  
+        
+        self.currentFrame = frameToShow
 
 class GameFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -47,7 +67,7 @@ class GameFrame(ctk.CTkFrame):
         """
         # possibly change the way you are getting the file path
         originalImg = Image.open(f"images/{card.getName()}.png")
-        resizedImg = originalImg.resize((150,218))
+        resizedImg = originalImg.resize(Constant.CARD_SIZE)
         newImg = ImageTk.PhotoImage(resizedImg)
         return newImg
     
@@ -57,7 +77,7 @@ class GameFrame(ctk.CTkFrame):
         """
         # possibly change the way you are getting the file path
         originalImg = Image.open(f"images/back_of_card.png")
-        resizedImg = originalImg.resize((150,218))
+        resizedImg = originalImg.resize(Constant.CARD_SIZE)
         newImg = ImageTk.PhotoImage(resizedImg)
         return newImg
     
@@ -85,5 +105,5 @@ class MenuFrame(ctk.CTkFrame):
 if __name__ == "__main__":
     # creating the game, does not create the deck, deck is only created after user presses startGame
     game = HigherLowerGame()
-    app = HigherLowerGUI(game)
+    app = HigherLowerApp(game)
     app.mainloop()
