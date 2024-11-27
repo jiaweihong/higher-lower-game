@@ -58,7 +58,7 @@ class Rank(Enum):
 
         return nameToSymbol[self.name]
 
-class Constraints(Enum):
+class Constant(Enum):
     NUM_MJ_WIN_REQUIRED = 6
     NUM_MJ_CHANCES = 8
     NUM_MJ_CARDS = 2
@@ -113,7 +113,7 @@ class Deck:
 
         # insert Rodman cards
         if isBullsEdition:
-            for i in range(Constraints.NUM_RODMAN_CARDS.value):
+            for i in range(Constant.NUM_RODMAN_CARDS.value):
                 self.cards.append(Card(Rank.RODMAN, Suit.BULLS, i + 1))
         
         self.shuffle()
@@ -161,7 +161,7 @@ class Deck:
         """
         Inserts MJ cards into the predefined locations
         """
-        for i, pos in enumerate(Constraints.MJ_LOCATIONS.value):
+        for i, pos in enumerate(Constant.MJ_LOCATIONS.value):
             self.cards.insert(len(self.cards)-pos, Card(Rank.MJ, Suit.BULLS, i + 1))
 
 
@@ -230,7 +230,7 @@ class HigherLowerGame:
         print(f"Next card is: {self.deck.seeTopCard().getName()}")
         
         if self.isMjActivated:
-            print(f"You are currently on MJ round number {self.currentMjRound+1} / {len(Constraints.MJ_WINNING_SEQUENCE.value)}")
+            print(f"You are currently on MJ round number {self.currentMjRound+1} / {len(Constant.MJ_WINNING_SEQUENCE.value)}")
 
         userInput: str = self.getHigherLowerInput(self.currentCard)
         
@@ -266,14 +266,14 @@ class HigherLowerGame:
                 # Check as soon as we finish playing the final MJ round
                 self.currentMjRound += 1
 
-                if self.currentMjRound == len(Constraints.MJ_WINNING_SEQUENCE.value):
-                    if self.currentMjSequence == Constraints.MJ_WINNING_SEQUENCE.value:
+                if self.currentMjRound == len(Constant.MJ_WINNING_SEQUENCE.value):
+                    if self.currentMjSequence == Constant.MJ_WINNING_SEQUENCE.value:
                         print("Congratulations you won the MJ round! You get 10 extra bonus points!!")
-                        self.score += Constraints.MJ_BONUS_POINTS.value
+                        self.score += Constant.MJ_BONUS_POINTS.value
                         self.isMjActivated = False
                     else:
                         print("Unfortunately you did not win any bonus points!")
-                        print(f"Your sequence was {self.currentMjSequence}, the required sequence is {Constraints.MJ_WINNING_SEQUENCE.value}")
+                        print(f"Your sequence was {self.currentMjSequence}, the required sequence is {Constant.MJ_WINNING_SEQUENCE.value}")
 
                     print("Exiting Special MJ Round...")
 
@@ -282,9 +282,9 @@ class HigherLowerGame:
                     self.currentMjRound = 0
                     self.currentMjSequence = []
             elif isCorrect and self.isRodmanActivated:
-                print(f"Rebounded by Rodman and you made the shot! You got {Constraints.RODMAN_BONUS_POINTS.value} points")
+                print(f"Rebounded by Rodman and you made the shot! You got {Constant.RODMAN_BONUS_POINTS.value} points")
 
-                self.score += Constraints.RODMAN_BONUS_POINTS.value
+                self.score += Constant.RODMAN_BONUS_POINTS.value
                 self.isRodmanActivated = False
             elif isCorrect:
                 print("Correct you got 1 point!")
