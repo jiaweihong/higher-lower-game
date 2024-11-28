@@ -23,6 +23,7 @@ class HigherLowerApp(ctk.CTk):
 
         self.title(Settings.WINDOW_TITLE.value)
 
+        # initialises all frames
         self.menuFrame = MenuFrame(self)
         self.gameFrame = GameFrame(self)
         self.endFrame = EndFrame(self)
@@ -50,6 +51,7 @@ class GameFrame(ctk.CTkFrame):
         self.configure(fg_color="transparent")
 
         # Info Frame
+        # some of these text values are set to None since value is unknown until user decides on which edition to play
         self.infoFrame = ctk.CTkFrame(self)
         self.infoFrame.grid(
             row=0, 
@@ -157,7 +159,7 @@ class GameFrame(ctk.CTkFrame):
         if card.rank == Rank.MJ:
             desc = f"You have received the special {card.getName()} card.\n\n Goal: Guess the next 8 cards in the following sequence: \n(W, W, W, L, L, W, W, W)\n\n to win 10 bonus points!"
         elif card.rank == Rank.RODMAN:
-            desc = f"You have received the special {card.getName()} card.\n\n"
+            desc = f"You have received the special {card.getName()} card. Get a 2nd chance on the next card you get wrong!\n\n"
 
         descLabel = ctk.CTkLabel(
             frame,
@@ -174,7 +176,6 @@ class GameFrame(ctk.CTkFrame):
         )
         cardLabel.grid(pady=20) 
 
-        # Button to close the popup
         closeBtn = ctk.CTkButton(
             frame, 
             text="Close", 
@@ -225,13 +226,13 @@ class GameFrame(ctk.CTkFrame):
 
         mjText = f"Current MJ Round: {self.game.currentMjRound}/{len(GameConstant.MJ_WINNING_SEQUENCE.value)}" if self.game.isBullsEdition and self.game.isMjActivated else f"Current MJ Round: N/A"
         self.mjRoundLabel.configure(text=mjText)
+
         self.numCardsRemainingLabel.configure(text=f"Normal Cards Remaining: {self.game.getNumRemainingNormalCards()}")
 
     def getImage(self, card: Card) -> ImageTk.PhotoImage:
         """
-        Returns the corresponding (according to attributes) and resized image of the card
+        Returns the corresponding resized image of a card
         """
-
         scriptDir = os.path.dirname(os.path.abspath(__file__))
         imagePath = os.path.join(scriptDir, "images", f"{card.getName()}.png")
 
@@ -336,7 +337,6 @@ class EndFrame(ctk.CTkFrame):
         self.master: HigherLowerGame = master 
         self.game: HigherLowerGame = self.master.game
 
-        # Title label
         self.endTitleLabel = ctk.CTkLabel(
             self, 
             text="Game Over! Thank you for playing!", 
@@ -344,7 +344,6 @@ class EndFrame(ctk.CTkFrame):
         )
         self.endTitleLabel.grid(pady=20, padx=20)
 
-        # Final score label
         self.scoreLabel = ctk.CTkLabel(
             self, 
             text=f"Your Final Score: {self.game.score}", 
@@ -352,7 +351,6 @@ class EndFrame(ctk.CTkFrame):
         )
         self.scoreLabel.grid(pady=10)
 
-        # Close game button
         self.closeBtn = ctk.CTkButton(
             self, 
             text="Close Game", 
@@ -362,6 +360,9 @@ class EndFrame(ctk.CTkFrame):
         self.closeBtn.grid(pady=20)
 
     def closeGame(self):
+        """
+        Closes the application
+        """
         self.master.destroy()
 
     def updateUi(self):
