@@ -66,6 +66,6 @@ python3 main.py
 ## Improvements:
 
 1. I think the higher lower handling logic of the game (HigherLowerGame.playRound) is a bit messy. There are a bit too many nested if else statements that make it a little bit hard to understand, so I would refine the logic.
-2. Since the CLI implementation was developed first, then only the GUI application. The final game was not designed with the MVC design pattern in mind and therefore not adhered to very well. The view (GUI) layer often directly interacts and changes the data of the Model (Game). I would develop the interface with the Model with the MVC model in mind next time.
+2. Since the CLI implementation was developed first, then only the GUI application. As such the final game was not designed with the MVC design pattern in mind and therefore not adhered to very well. The view (GUI) layer often directly interacts and changes the data of the Model (Game). I would develop the interface with the Model with the MVC model in mind next time.
 3. I would also change the deck's data structure from a stack to a queue (deque). Since we don't actually need the LIFO principle of a stack as cards are not being readded to the pile. Using a queue would make indexing simpler. Currently in the code, when I'm trying to get the ith card (from the top), I always need to do cardsStack[(length of cards - ith card)], whereas a queue would allow me to use 'i' directly like cardsQueue[i].
 4. I would make the game a bit prettier, its currently looking a bit rough :p
