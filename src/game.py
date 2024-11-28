@@ -217,17 +217,12 @@ class HigherLowerGame:
         nextCard: Card = self.deck.drawCard()
 
         if nextCard.rank == Rank.MJ:
-            print(f"Congratulations you got the Micheal Jordan card, activating special MJ round...")
             self.isMjActivated = True
-            
             return True
         elif nextCard.rank == Rank.RODMAN:
             self.currentRodmanCards += 1
-            print(f"Congratulations you got a Rodman Card, you currently have {self.currentRodmanCards} Rodman Cards")
-
             return True
         else: # next card is NOT a special card
-            print(f"The card was a {nextCard.getName()}")
             isCorrect: bool = self.compareCards(self.currentCard, nextCard, isUserInputHigher)
             
             # need to increment before if statements so, because if we are on the last card, the game needs to know that this is the last round
@@ -236,42 +231,31 @@ class HigherLowerGame:
             if self.isMjActivated:
                 # basically when the current winning number is 1, we need to guess correctly, when it is 0, we need to guess 'wrongly'
                 if (isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 1) or (not isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 0):
-                    print("Correct you got 1 point!")
                     self.score += 1
                     self.currentMjSequence.append(Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound])
 
                     if self.currentMjSequence == Constant.MJ_WINNING_SEQUENCE.value:
-                        print("Congratulations you won the MJ round! You get 10 extra bonus points!!")
                         self.score += Constant.MJ_BONUS_POINTS.value
                         self.resetMjRound()
                 else:
-                    print("Incorrect! Now Exiting MJ Special Round...")
                     self.resetMjRound()
                 self.currentMjRound += 1
             elif isCorrect and self.isRodmanActivated:
-                print(f"Rebounded by Rodman and you made the shot! You got {Constant.RODMAN_BONUS_POINTS.value} points")
-
                 self.score += Constant.RODMAN_BONUS_POINTS.value
                 self.isRodmanActivated = False
             elif isCorrect:
-                print("Correct you got 1 point!")
                 self.score += 1
             else:
-                print("Incorrect!")
-
                 if self.isBullsEdition and self.currentRodmanCards > 0 and self.normalCardsDrawned < self.deck.startingNumPlayingCards:
                     self.currentRodmanCards -= 1
-                    print("You activated a Rodman card! You get a second chance. Get the next card right to win double points!")
                     self.isRodmanActivated = True
                 else: # this means u either have no rodman cards or u are playing normal version of the game
-                    print()
                     return False
 
             if self.normalCardsDrawned == self.deck.startingNumPlayingCards:
                 return False
             
             self.currentCard = nextCard
-            print(f"Your current score is: {self.score} \n")
 
             return True
             
