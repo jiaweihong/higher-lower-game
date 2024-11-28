@@ -71,9 +71,7 @@ class Card:
     def __init__(self, rank: Rank, suit: Suit, count: int = None):
         """
         Initialises a playing card (can be normal or special card)
-
-        :param rank: rank of the card
-        :param suit: suit of the card
+        
         :param value: the value of the card to allow comparison
         :param count: the ith special card (MJ/RODMAN), Ideally Card should be a base class then have PlayingCard and SpecialCard extend it.
         """
@@ -162,7 +160,7 @@ class Deck:
 class HigherLowerGame:
     def __init__(self):
         """
-        Initialises the high level game object (However, it does not initilise deck since we need to get user input 1st)
+        Initialises the high level game object (However, it does not initilise deck since user needs to decide which version of game to play)
 
         :parms currentCard: Holds the current normal card (non-special)
         """
@@ -205,13 +203,16 @@ class HigherLowerGame:
         return True if card.rank == (Rank.MJ) else False
 
     def resetMjRound(self):
+        """
+        Resets MJ round related attributes
+        """
         self.isMjActivated = False
         self.currentMjRound = 0
         self.currentMjSequence = []
 
     def playRound(self, isUserInputHigher: bool) -> bool:
         """
-        Contains the main game logic to handle the players move
+        Returns a boolean indicating if the round should continue (logic to handle player's guess and next card scenarios are here)
         """ 
         
         nextCard: Card = self.deck.drawCard()
@@ -225,11 +226,11 @@ class HigherLowerGame:
         else: # next card is NOT a special card
             isCorrect: bool = self.compareCards(self.currentCard, nextCard, isUserInputHigher)
             
-            # need to increment before if statements so, because if we are on the last card, the game needs to know that this is the last round
+            # need to increment before if statements so, because if we are on the last card, the game needs to know that this is the last round and return false
             self.normalCardsDrawned += 1
 
             if self.isMjActivated:
-                # basically when the current winning number is 1, we need to guess correctly, when it is 0, we need to guess 'wrongly'
+                # basically when the current winning number is 1, we need to guess correctly, when it is 0, we need to guess 'wrongly' (note guessing wrongly increments score as well)
                 if (isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 1) or (not isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 0):
                     self.score += 1
                     self.currentMjSequence.append(Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound])
@@ -249,7 +250,7 @@ class HigherLowerGame:
                 if self.isBullsEdition and self.currentRodmanCards > 0 and self.normalCardsDrawned < self.deck.startingNumPlayingCards:
                     self.currentRodmanCards -= 1
                     self.isRodmanActivated = True
-                else: # this means u either have no rodman cards or u are playing normal version of the game
+                else: # this means u either (have no rodman cards and got it wrong) or (u are playing normal version of the game and got it wrong)
                     return False
 
             if self.normalCardsDrawned == self.deck.startingNumPlayingCards:
@@ -261,7 +262,7 @@ class HigherLowerGame:
             
     def startGame(self) -> None:
         """
-        Starts the game
+        Draws a card to start the game
         """
         # Draws the initial card for the user
         self.currentCard = self.deck.drawCard()
