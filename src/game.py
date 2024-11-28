@@ -59,8 +59,6 @@ class Rank(Enum):
         return nameToSymbol[self.name]
 
 class Constant(Enum):
-    NUM_MJ_WIN_REQUIRED = 6
-    NUM_MJ_CHANCES = 8
     NUM_MJ_CARDS = 2
     NUM_RODMAN_CARDS = 4
     # (Note: 0-indexed) 
@@ -128,17 +126,14 @@ class Deck:
     
     def printDeck(self) -> None:
         """
-        (For Debugging) Prints the entire deck
+        For debugging purposes, prints the entire deck
         """
         res: list[str] = []
         for card in self.cards:
             res.append(f"{card.getName()}")
 
-        print()
         print(res)
-        print()
 
-    
     def shuffle(self) -> None:
         """
         Shuffles the cards
@@ -164,7 +159,6 @@ class Deck:
         for i, pos in enumerate(Constant.MJ_LOCATIONS.value):
             self.cards.insert(len(self.cards)-pos, Card(Rank.MJ, Suit.BULLS, i + 1))
 
-
 class HigherLowerGame:
     def __init__(self):
         """
@@ -184,6 +178,9 @@ class HigherLowerGame:
         self.isMjActivated = False
         self.isRodmanActivated: bool = False
         self.score: int = 0
+
+    def getNumRemainingNormalCards(self) -> int:
+        return self.deck.startingNumPlayingCards - self.normalCardsDrawned
     
     def configureSpecialEdition(self, isBullsEdition: bool) -> None:
         """
@@ -216,6 +213,7 @@ class HigherLowerGame:
         """
         Contains the main game logic to handle the players move
         """ 
+        
         nextCard: Card = self.deck.drawCard()
 
         if nextCard.rank == Rank.MJ:
@@ -271,12 +269,12 @@ class HigherLowerGame:
 
             if self.normalCardsDrawned == self.deck.startingNumPlayingCards:
                 return False
-
+            
             self.currentCard = nextCard
             print(f"Your current score is: {self.score} \n")
 
             return True
-           
+            
     def startGame(self) -> None:
         """
         Starts the game
