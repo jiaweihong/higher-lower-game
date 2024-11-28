@@ -162,7 +162,8 @@ class HigherLowerGame:
         """
         Initialises the high level game object (However, it does not initilise deck since user needs to decide which version of game to play)
 
-        :parms currentCard: Holds the current normal card (non-special)
+        :params currentCard: Holds the current normal card (non-special)
+        :params currentMJRound: this refers the index position (0th-indexed) i.e 0 == 1st round
         """
         self.deck: Deck = None
         self.currentCard: Card = None
@@ -230,16 +231,21 @@ class HigherLowerGame:
             self.normalCardsDrawned += 1
 
             if self.isMjActivated:
-                # basically when the current winning number is 1, we need to guess correctly, when it is 0, we need to guess 'wrongly' (note guessing wrongly increments score as well)
+                # if player correctly guess current MJ sequence
                 if (isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 1) or (not isCorrect and Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound] == 0):
                     self.score += 1
                     self.currentMjSequence.append(Constant.MJ_WINNING_SEQUENCE.value[self.currentMjRound])
 
+                    # check if the player won the mj round 
                     if self.currentMjSequence == Constant.MJ_WINNING_SEQUENCE.value:
                         self.score += Constant.MJ_BONUS_POINTS.value
                         self.resetMjRound()
-                else:
+                        self.currentCard = nextCard
+                        return True
+                else: # player guesses wrong so we end
                     self.resetMjRound()
+                    self.currentCard = nextCard
+                    return True
                 self.currentMjRound += 1
             elif isCorrect and self.isRodmanActivated:
                 self.score += Constant.RODMAN_BONUS_POINTS.value

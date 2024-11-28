@@ -224,7 +224,7 @@ class GameFrame(ctk.CTkFrame):
         rodmanText = f"Available Rodman Cards: {self.master.game.currentRodmanCards}" if self.game.isBullsEdition else f"Available Rodman Cards: N/A"
         self.rodmanCountLabel.configure(text=rodmanText)
 
-        mjText = f"Current MJ Round: {self.game.currentMjRound}/{len(GameConstant.MJ_WINNING_SEQUENCE.value)}" if self.game.isBullsEdition and self.game.isMjActivated else f"Current MJ Round: N/A"
+        mjText = f"Current MJ Round: {self.game.currentMjRound+1}/{len(GameConstant.MJ_WINNING_SEQUENCE.value)}" if self.game.isBullsEdition and self.game.isMjActivated else f"Current MJ Round: N/A"
         self.mjRoundLabel.configure(text=mjText)
 
         self.numCardsRemainingLabel.configure(text=f"Normal Cards Remaining: {self.game.getNumRemainingNormalCards()}")
