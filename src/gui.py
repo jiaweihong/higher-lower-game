@@ -20,7 +20,6 @@ class HigherLowerApp(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
 
         self.title("App")
-        self.geometry("600x600")
 
         self.menuFrame = MenuFrame(self)
         self.gameFrame = GameFrame(self)
@@ -32,15 +31,8 @@ class HigherLowerApp(ctk.CTk):
         self.showFrame(self.menuFrame)
     
     def showFrame(self, frameToShow: ctk.CTkFrame):
-        if self.currentFrame == self.menuFrame or self.currentFrame == self.endFrame:
-            self.currentFrame.pack_forget() 
-        elif self.currentFrame == self.gameFrame: 
-            self.currentFrame.grid_forget() 
-
-        if frameToShow == self.menuFrame or frameToShow == self.endFrame:
-            frameToShow.pack(expand=True, fill="both")  
-        elif frameToShow == self.gameFrame: 
-            frameToShow.grid()  
+        self.currentFrame.grid_forget() 
+        frameToShow.grid(padx=40, pady=50)  
         
         if hasattr(frameToShow, "updateUi"):
             frameToShow.updateUi()
@@ -53,12 +45,8 @@ class GameFrame(ctk.CTkFrame):
         self.master: HigherLowerApp = master
         self.game: HigherLowerGame = self.master.game
 
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=1)
-    
+        self.configure(fg_color="transparent")
+
         # Info Frame
         self.infoFrame = ctk.CTkFrame(self)
         self.infoFrame.grid(
@@ -137,7 +125,6 @@ class GameFrame(ctk.CTkFrame):
             column=0, 
             columnspan=2, 
             pady=10, 
-            sticky="nsew"
         )
 
         self.higherBtn = ctk.CTkButton(
@@ -145,47 +132,53 @@ class GameFrame(ctk.CTkFrame):
             text="Higher", 
             command=self.onHigherBtnClick
         )
-        self.higherBtn.pack(side="left", padx=20)
+        self.higherBtn.grid(row=0, column=0, padx=20)
 
         self.lowerBtn = ctk.CTkButton(
             self.btnFrame, 
             text="Lower", 
             command=self.onLowerBtnClick
         )
-        self.lowerBtn.pack(side="right", padx=20)
+        self.lowerBtn.grid(row=0, column=1, padx=20)
 
     def showSpecialCardPopup(self, card: Card): 
         popup = ctk.CTkToplevel(self)
         popup.title("Special Card Received")
-        popup.geometry("500x450")
+
+        popup.grid_rowconfigure(0, weight=1)
+        popup.grid_columnconfigure(0, weight=1)
+
+        frame = ctk.CTkFrame(popup)
+        frame.grid(padx=40, pady=50)
 
         desc = ""
         if card.rank == Rank.MJ:
-            desc = f"You have received the special {card.getName()} card.\n\n Guess the next 8 cards in the following sequence (R, R, R, W, W, R, R, R) corresponding to the Bulls Winning Sequence from 1991-98, where R means you correctly guessed it and W means you 'wrongly' guessed it, to win 10 bonus points"
+            desc = f"You have received the special {card.getName()} card.\n\n Goal: Guess the next 8 cards in the following sequence: \n(W, W, W, L, L, W, W, W)\n\n to win 10 bonus points!"
         elif card.rank == Rank.RODMAN:
-            desc = f"You have received the special {card.getName()} card.\n\n On the next card you get wrong, it will be rebounded by Rodman, giving you a 2nd chance to win double points!"
+            desc = f"You have received the special {card.getName()} card.\n\n"
 
         descLabel = ctk.CTkLabel(
-            popup,
+            frame,
             text=desc,
             wraplength=400,
             font=("Arial", 14),
         )
-        descLabel.pack(pady=10) 
+        descLabel.grid(pady=10, padx=20) 
 
         cardLabel = ctk.CTkLabel(
-            popup,
+            frame,
+            text=None,
             image=self.getImage(card)
         )
-        cardLabel.pack(pady=20) 
+        cardLabel.grid(pady=20) 
 
         # Button to close the popup
         closeBtn = ctk.CTkButton(
-            popup, 
+            frame, 
             text="Close", 
             command=popup.destroy
         )
-        closeBtn.pack(pady=10)
+        closeBtn.grid(pady=10)
         
         # Freeze main window until the popup is closed
         popup.grab_set()
@@ -199,7 +192,7 @@ class GameFrame(ctk.CTkFrame):
         elif self.game.isNextCardRodman(nextCard):
             self.showSpecialCardPopup(nextCard)
 
-        isPlayNextRound: bool = self.game.playRound(isUserInputHigher=False)
+        isPlayNextRound: bool = self.game.playRound(isUserInputHigher=True)
 
         if isPlayNextRound:
             self.updateUi()
@@ -232,7 +225,6 @@ class GameFrame(ctk.CTkFrame):
         self.mjRoundLabel.configure(text=mjText)
         self.numCardsRemainingLabel.configure(text=f"Normal Cards Remaining: {self.game.getNumRemainingNormalCards()}")
 
-    
     def getImage(self, card: Card) -> ImageTk.PhotoImage:
         """
         Returns the corresponding (according to attributes) and resized image of the card
@@ -258,29 +250,55 @@ class MenuFrame(ctk.CTkFrame):
         super().__init__(master)
         self.master: HigherLowerApp = master
         self.game: HigherLowerGame = self.master.game
-
+        
         self.menuTitleLabel = ctk.CTkLabel(
             self, 
             text="Higher Lower Game (Chicago Bulls Edition)", 
             font=("Arial", 24, "bold")
         )
-        self.menuTitleLabel.pack(pady=20)
+        self.menuTitleLabel.grid(pady=20)
+
 
         self.rulesLabel = ctk.CTkLabel(
             self, 
-            text="Game Rules: \n1. Rule one description.\n2. Rule two description.\n3. Rule three description.", 
-            justify="left", 
-            font=("Arial", 14)
+            text="How To Play:", 
+            font=("Arial", 16, "bold")
         )
-        self.rulesLabel.pack(pady=10)
-        
+        self.rulesLabel.grid()
+        self.rulesLabel = ctk.CTkLabel(
+            self, 
+            text=f"""
+                1. You are given a card and you need to guess if the next card in the deck is higher or lower. Guessing wrongly will end the game.\n
+                2. The ascending order (weakest -> strongest) of card rank is: 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A.\n
+                3. If the card rank is the same, then game will compare by suit. The ascending order of suit is: clubs, diamonds, hearts, and spades\n
+                4. Enabling special edition will add {GameConstant.NUM_MJ_CARDS.value} MJ and {GameConstant.NUM_RODMAN_CARDS.value} Rodman cards into the deck.\n
+                5. Drawing the MJ card activates a special round where you need to guess the next 8 cards in the following sequence: (W, W, W, L, L, W, W, W) 
+                    where 'W' means you want to correctly guessed it and 'L' means you want to 'wrongly' guessed it. If succesful, win 10 bonus points.\n
+                6. Note that during the MJ Round, any rodman cards received during this special round will not count towards the win / loss sequence but will still be kept.\n
+                7. Drawing a Rodman card means that on the next card you get wrong, it will activate, giving you a 2nd chance to win double points!\n
+            """, 
+            justify="left", 
+            wraplength=1200,
+            font=("Arial", 14),
+            padx=30
+        )
+        self.rulesLabel.grid()
+
+
+        self.optionsLabel = ctk.CTkLabel(
+            self, 
+            text="Special Options:", 
+            font=("Arial", 16, "bold")
+        )
+        self.optionsLabel.grid()
+
         self.isBullsEditionOn = ctk.BooleanVar(value=False)
         self.bullsCheckbox = ctk.CTkCheckBox(
             self, 
             text="Enable Special Edition", 
             variable=self.isBullsEditionOn
         )
-        self.bullsCheckbox.pack(pady=10)
+        self.bullsCheckbox.grid(pady=10)
 
         # Isdp == I See Dead People (Warcraft 3 cheat code)
         self.isIsdpOn = ctk.BooleanVar(value=False)
@@ -289,21 +307,20 @@ class MenuFrame(ctk.CTkFrame):
             text="Enable True Sight (preview next card)", 
             variable=self.isIsdpOn
         )
-        self.isIsdpCheckbox.pack(pady=10)
+        self.isIsdpCheckbox.grid(pady=10)
 
         self.startBtn = ctk.CTkButton(
             self, 
             text="Start Game", 
             command=self.startGame
         )
-        self.startBtn.pack(pady=20)
+        self.startBtn.grid(pady=20)
 
     def startGame(self):
         self.game.configureSpecialEdition(self.isBullsEditionOn.get())
         self.game.startGame()
         
         self.master.showFrame(self.master.gameFrame)
-
 
 class EndFrame(ctk.CTkFrame):
     def __init__(self, master: HigherLowerGame):
@@ -318,7 +335,7 @@ class EndFrame(ctk.CTkFrame):
             text="Game Over! Thank you for playing!", 
             font=("Arial", 24, "bold")
         )
-        self.endTitleLabel.pack(pady=20)
+        self.endTitleLabel.grid(pady=20, padx=20)
 
         # Final score label
         self.scoreLabel = ctk.CTkLabel(
@@ -326,7 +343,7 @@ class EndFrame(ctk.CTkFrame):
             text=f"Your Final Score: {self.game.score}", 
             font=("Arial", 18)
         )
-        self.scoreLabel.pack(pady=10)
+        self.scoreLabel.grid(pady=10)
 
         # Close game button
         self.closeBtn = ctk.CTkButton(
@@ -335,7 +352,7 @@ class EndFrame(ctk.CTkFrame):
             command=self.closeGame
         )
 
-        self.closeBtn.pack(pady=10)
+        self.closeBtn.grid(pady=20)
 
     def closeGame(self):
         self.master.destroy()
