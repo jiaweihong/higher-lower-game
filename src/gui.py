@@ -1,6 +1,5 @@
 import customtkinter as ctk
-from game import HigherLowerGame, Card, Rank, Constant, Deck
-from game import Constant as GameConstant
+from .game import HigherLowerGame, Card, Rank, Constant as GameConstant
 from PIL import Image, ImageTk
 from enum import Enum
 
@@ -359,8 +358,3 @@ class EndFrame(ctk.CTkFrame):
 
     def updateUi(self):
         self.scoreLabel.configure(text=f"Your Final Score: {self.game.score}")
-
-if __name__ == "__main__":
-    game = HigherLowerGame()
-    app = HigherLowerApp(game)
-    app.mainloop()
