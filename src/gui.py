@@ -2,6 +2,7 @@ import customtkinter as ctk
 from .game import HigherLowerGame, Card, Rank, Constant as GameConstant
 from PIL import Image, ImageTk
 from enum import Enum
+import os
 
 
 class Constant(Enum):
@@ -228,8 +229,11 @@ class GameFrame(ctk.CTkFrame):
         """
         Returns the corresponding (according to attributes) and resized image of the card
         """
-        # possibly change the way you are getting the file path
-        originalImg = Image.open(f"images/{card.getName()}.png")
+
+        scriptDir = os.path.dirname(os.path.abspath(__file__))
+        imagePath = os.path.join(scriptDir, "images", f"{card.getName()}.png")
+
+        originalImg = Image.open(imagePath)
         resizedImg = originalImg.resize(Constant.CARD_SIZE.value)
         newImg = ImageTk.PhotoImage(resizedImg)
         return newImg
@@ -238,8 +242,10 @@ class GameFrame(ctk.CTkFrame):
         """
         Returns the back image of a card
         """
-        # possibly change the way you are getting the file path
-        originalImg = Image.open(f"images/back_of_card.png")
+        scriptDir = os.path.dirname(os.path.abspath(__file__))
+        imagePath = os.path.join(scriptDir, "images", "back_of_card.png")
+        
+        originalImg = Image.open(imagePath)
         resizedImg = originalImg.resize(Constant.CARD_SIZE.value)
         newImg = ImageTk.PhotoImage(resizedImg)
         return newImg
