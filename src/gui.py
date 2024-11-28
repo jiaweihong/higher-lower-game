@@ -5,21 +5,23 @@ from enum import Enum
 import os
 
 
-class Constant(Enum):
+class Settings(Enum):
     CARD_SIZE = (150,218)
+    COLOUR_MODE = "dark"
+    WINDOW_TITLE = "Card Game"
 
 class HigherLowerApp(ctk.CTk):
     def __init__(self, game: HigherLowerGame):
         super().__init__()
         self.game: HigherLowerGame = game
 
-        ctk.set_appearance_mode("dark")
+        ctk.set_appearance_mode(Settings.COLOUR_MODE.value)
 
         # Configure rows and columns for centering frames
         self.grid_rowconfigure(0, weight=1)  
         self.grid_columnconfigure(0, weight=1)
 
-        self.title("App")
+        self.title(Settings.WINDOW_TITLE.value)
 
         self.menuFrame = MenuFrame(self)
         self.gameFrame = GameFrame(self)
@@ -234,7 +236,7 @@ class GameFrame(ctk.CTkFrame):
         imagePath = os.path.join(scriptDir, "images", f"{card.getName()}.png")
 
         originalImg = Image.open(imagePath)
-        resizedImg = originalImg.resize(Constant.CARD_SIZE.value)
+        resizedImg = originalImg.resize(Settings.CARD_SIZE.value)
         newImg = ImageTk.PhotoImage(resizedImg)
         return newImg
     
@@ -246,7 +248,7 @@ class GameFrame(ctk.CTkFrame):
         imagePath = os.path.join(scriptDir, "images", "back_of_card.png")
         
         originalImg = Image.open(imagePath)
-        resizedImg = originalImg.resize(Constant.CARD_SIZE.value)
+        resizedImg = originalImg.resize(Settings.CARD_SIZE.value)
         newImg = ImageTk.PhotoImage(resizedImg)
         return newImg
     
