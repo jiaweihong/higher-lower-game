@@ -20,7 +20,7 @@ Using `brew` package manager as an example:
 
 ```shell
 # Install system dependencies
-brew install python
+brew install python pipx python-tk
 # Install poetry
 pipx ensurepath
 pipx install poetry
