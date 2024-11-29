@@ -15,6 +15,8 @@
 
 - Python
 - Poetry
+- pipx
+- python-tk
 
 Using `brew` package manager as an example:
 
