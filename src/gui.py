@@ -277,13 +277,13 @@ class MenuFrame(ctk.CTkFrame):
             self, 
             text=f"""
                 1. You are given a card and you need to guess if the next card in the deck is higher or lower. Guessing wrongly will end the game.\n
-                2. The ascending order (weakest -> strongest) of card rank is: 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A.\n
-                3. If the card rank is the same, then game will compare by suit. The ascending order of suit is: diamonds, clubs, hearts, and spades\n
+                2. The ascending order of card rank is: 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A.\n
+                3. If the card rank is the same, then game will compare by suit. The ascending order of suit is: diamonds, clubs, hearts, spades.\n
                 4. Enabling special edition will add {GameConstant.NUM_MJ_CARDS.value} MJ and {GameConstant.NUM_RODMAN_CARDS.value} Rodman cards into the deck.\n
                 5. Drawing the MJ card activates a special round where you need to guess the next 8 cards in the following sequence: (W, W, W, L, L, W, W, W) 
-                    where 'W' means you want to correctly guessed it and 'L' means you want to 'wrongly' guessed it. If succesful, win 10 bonus points.\n
+                    where 'W' means you want to correctly guess it and 'L' means you want to 'wrongly' guess it. If succesful, win 10 bonus points.\n
                 6. Note that during the MJ Round, any rodman cards received during this special round will not count towards the win / loss sequence but will\n 
-                    still be kept. As soon as your sequence does not match the prefined sequence, you will immediately exit the MJ round\n
+                    still be kept. As soon as your sequence does not match the prefined sequence, you will immediately exit the MJ round.\n
                 7. Drawing a Rodman card means that on the next card you get wrong, it will activate, giving you a 2nd chance to win double points!\n
             """, 
             justify="left", 
