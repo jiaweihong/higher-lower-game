@@ -24,12 +24,23 @@ brew install python pipx python-tk
 # Install poetry
 pipx ensurepath
 pipx install poetry
-
-# Install project dependencies
-poetry install
 ```
 
 ### Usage:
+
+Clone the project:
+
+```shell
+git clone https://github.com/jiaweihong/higher-lower-game.git
+
+cd higher-lower-game
+```
+
+Install project dependencies:
+
+```shell
+poetry install
+```
 
 Activate the Python virtual environment:
 
